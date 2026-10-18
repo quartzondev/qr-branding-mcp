@@ -1,0 +1,7 @@
+src/
+tools/
+tsconfig.json
+.gitignore
+node_modules/
+*.log
+*.tsbuildinfo

@@ -1,0 +1,42 @@
+{
+  "name": "@qr-branding/mcp-server",
+  "version": "0.1.4",
+  "description": "MCP server for the QR Branding API — generate QR codes from AI assistants. mcprush.com-claim-qr-branding-mcp-4b2eeb612b3b12d4f31a9207",
+  "mcpName": "io.github.quartzondev/qr-branding",
+  "type": "module",
+  "bin": {
+    "qr-branding-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "smoke": "tsx tools/smoke.ts",
+    "test": "tsx --test test/server.test.ts",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "homepage": "https://qr-branding.com/docs/integrations/mcp",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "qr-code",
+    "claude",
+    "qr-branding"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

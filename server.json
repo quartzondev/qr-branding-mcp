@@ -1,0 +1,48 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.quartzondev/qr-branding",
+  "title": "QR Branding",
+  "description": "Generate branded, scan-validated QR codes (manual, AI, templates, Wi-Fi, vCard, geo).",
+  "websiteUrl": "https://qr-branding.com/docs/integrations/mcp",
+  "version": "0.1.3",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@qr-branding/mcp-server",
+      "version": "0.1.3",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "QR_BRANDING_API_KEY",
+          "description": "Your QR Branding API key (qrb_…), from https://qr-branding.com/dashboard/keys. Requires a Studio pack.",
+          "isRequired": true,
+          "isSecret": true
+        },
+        {
+          "name": "QR_BRANDING_API_BASE_URL",
+          "description": "Gateway base URL. Defaults to https://qr-branding.com.",
+          "isRequired": false,
+          "isSecret": false
+        }
+      ]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://qr-branding.com/mcp",
+      "headers": [
+        {
+          "name": "X-API-Key",
+          "description": "Your QR Branding API key (qrb_…). `Authorization: Bearer qrb_…` is accepted too. Optional: without a key the remote server runs a keyless trial (no AI, PNG up to 720 px, 20 tool calls per day per network).",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
