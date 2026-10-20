@@ -1,7 +1,7 @@
 {
   "name": "@qr-branding/mcp-server",
-  "version": "0.1.4",
-  "description": "MCP server for the QR Branding API — generate QR codes from AI assistants. mcprush.com-claim-qr-branding-mcp-4b2eeb612b3b12d4f31a9207",
+  "version": "0.1.5",
+  "description": "MCP server for the QR Branding API — generate QR codes from AI assistants.",
   "mcpName": "io.github.quartzondev/qr-branding",
   "type": "module",
   "bin": {
@@ -38,5 +38,12 @@
     "@types/node": "^20.14.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quartzondev/qr-branding-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/quartzondev/qr-branding-mcp/issues"
   }
 }

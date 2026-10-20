@@ -12,7 +12,7 @@ export interface ServerConfig {
   version: string;
 }
 
-const PACKAGE_VERSION = "0.1.4";
+const PACKAGE_VERSION = "0.1.5";
 
 const DEFAULT_BASE_URL = "https://qr-branding.com";
 

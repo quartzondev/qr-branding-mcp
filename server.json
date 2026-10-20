@@ -4,13 +4,13 @@
   "title": "QR Branding",
   "description": "Generate branded, scan-validated QR codes (manual, AI, templates, Wi-Fi, vCard, geo).",
   "websiteUrl": "https://qr-branding.com/docs/integrations/mcp",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@qr-branding/mcp-server",
-      "version": "0.1.3",
+      "version": "0.1.5",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"
