@@ -1,5 +1,7 @@
 # @qr-branding/mcp-server
 
+[![QR Branding MCP server](https://mcprush.com/badge/qr-branding-mcp/card.svg)](https://mcprush.com/to/qr-branding-mcp?ref=badge)
+
 MCP server for the [QR Branding](https://qr-branding.com) API. Lets Claude Desktop, Claude Code, Cursor, ChatGPT desktop, and any other Model Context Protocol client generate branded QR codes, render any of the 118 curated templates, or assemble Wi-Fi / vCard / geo payloads — all through your QR Branding API key.
 
 ## What it does
