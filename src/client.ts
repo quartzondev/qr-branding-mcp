@@ -8,6 +8,7 @@
  */
 
 import type { ServerConfig } from "./config.js";
+import { MISSING_API_KEY } from "./config.js";
 
 export interface ApiSuccess<T> {
   ok: true;
@@ -41,6 +42,17 @@ export class QrBrandingClient {
 
   async request<T>(opts: RequestOptions): Promise<ApiResult<T>> {
     const url = `${this.config.baseUrl}${opts.path}`;
+    if (!this.config.apiKey) {
+      // Listing the tools needs no credential; calling one does.
+      return {
+        ok: false,
+        status: 401,
+        message: MISSING_API_KEY,
+        rawBody: "",
+        jsonBody: undefined,
+        code: "missing_api_key",
+      };
+    }
     const headers: Record<string, string> = {
       "X-API-Key": this.config.apiKey,
       "User-Agent": this.config.userAgent,

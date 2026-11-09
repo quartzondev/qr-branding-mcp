@@ -1,7 +1,7 @@
 {
   "name": "@qr-branding/mcp-server",
-  "version": "0.1.5",
-  "description": "MCP server for the QR Branding API — generate QR codes from AI assistants.",
+  "version": "0.2.2",
+  "description": "MCP server for the QR Branding API Ã¢â‚¬â€ generate QR codes from AI assistants.",
   "mcpName": "io.github.quartzondev/qr-branding",
   "type": "module",
   "bin": {

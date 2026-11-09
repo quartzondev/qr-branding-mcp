@@ -9,19 +9,15 @@
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
-import { loadConfig } from "./config.js";
+import { loadConfig, MISSING_API_KEY } from "./config.js";
 import { QrBrandingClient } from "./client.js";
 import { createServer } from "./server.js";
 
 async function main(): Promise<void> {
-  let config;
-  try {
-    config = loadConfig();
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    process.stderr.write(`[qr-branding-mcp] ${message}\n`);
-    process.exit(1);
-  }
+  // No key is fine: the server still lists its tools (registries introspect it
+  // that way) and answers tool calls with a clear "set the key" error.
+  const config = loadConfig();
+  if (!config.apiKey) process.stderr.write(`[qr-branding-mcp] ${MISSING_API_KEY}\n`);
 
   const server = createServer(new QrBrandingClient(config), config.version);
 

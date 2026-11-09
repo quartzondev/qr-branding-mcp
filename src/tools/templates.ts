@@ -139,6 +139,6 @@ export async function handleQrGenerateFromTemplate(
   return buildQrResult(result.data, {
     summary: `Rendered template ${input.templateId}` + (input.content ? ` with content: ${input.content}` : ""),
     requestedFormat: input.fileFormat,
-    structured: { content: input.content || undefined },
+    structured: { content: input.content || undefined, templateId: String(input.templateId) },
   });
 }

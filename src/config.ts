@@ -1,31 +1,30 @@
 /**
  * Runtime configuration for the QR Branding MCP server.
  *
- * Reads from environment variables once at startup. Fails fast with a
- * human-readable message if the API key is missing.
+ * The API key is optional at startup on purpose: `tools/list` is public, and
+ * registries and directory crawlers introspect a server before anyone has
+ * configured a key (Glama builds the image and asks for the tool list). A tool
+ * that actually needs the API answers with a clear error instead.
  */
 
 export interface ServerConfig {
-  apiKey: string;
+  apiKey: string | null;
   baseUrl: string;
   userAgent: string;
   version: string;
 }
 
-const PACKAGE_VERSION = "0.1.5";
+const PACKAGE_VERSION = "0.2.2";
 
 const DEFAULT_BASE_URL = "https://qr-branding.com";
 
+export const MISSING_API_KEY =
+  "QR_BRANDING_API_KEY is not set. Get a key at https://qr-branding.com/dashboard/keys and add it to the " +
+  "`env` block of your MCP client config (claude_desktop_config.json / .mcp.json), or export it before launching " +
+  "the server: export QR_BRANDING_API_KEY=qrb_xxx";
+
 export function loadConfig(): ServerConfig {
-  const apiKey = process.env["QR_BRANDING_API_KEY"]?.trim();
-  if (!apiKey) {
-    throw new Error(
-      "QR_BRANDING_API_KEY is not set.\n" +
-        "Get an API key at https://qr-branding.com/dashboard/keys and export it before launching the MCP server:\n" +
-        "  export QR_BRANDING_API_KEY=qrb_xxx\n" +
-        "or add it under the `env` block of your MCP client config (claude_desktop_config.json / .mcp.json).",
-    );
-  }
+  const apiKey = process.env["QR_BRANDING_API_KEY"]?.trim() || null;
 
   const baseUrlRaw = process.env["QR_BRANDING_API_BASE_URL"]?.trim() || DEFAULT_BASE_URL;
   const baseUrl = baseUrlRaw.replace(/\/+$/, "");

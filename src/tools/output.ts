@@ -9,7 +9,23 @@
 
 import { z } from "zod/v3";
 
-/** qr_generate, qr_generate_from_template. */
+/**
+ * Keyless-trial upsell. The remote server fills it on every keyless render; the
+ * stdio package always sends an API key, so it declares the field (the shapes
+ * must match, see the drift guard in frontend/lib/mcp/tools.test.ts) and never
+ * sets it.
+ */
+const upgradeShape = {
+  url: z.string().describe("Where the same design can be exported as SVG/PDF up to 4K."),
+  reason: z.string().describe("What the keyless trial capped on this call, in one line."),
+  formats: z.array(z.string()).describe("Formats and sizes a QR Branding API key unlocks."),
+  reopenUrl: z.string().optional().describe("Builder link that reopens this design (templates carry their id)."),
+  askUser: z
+    .string()
+    .describe("One sentence the assistant can relay when the user needs print, a larger size or a vector file."),
+};
+
+/** qr_generate. */
 export const qrImageOutputShape = {
   format: z.string().describe("File format the engine rendered: png, svg, jpg, webp or pdf."),
   mimeType: z.string().optional().describe("MIME type of the rendered file (the engine's contentType)."),
@@ -19,7 +35,26 @@ export const qrImageOutputShape = {
     .optional()
     .describe("PDF on the remote server only: URI of the embedded resource block that carries the file."),
   filePath: z.string().optional().describe("PDF in the stdio package only: local temp file the PDF was written to."),
+  upgrade: z.object(upgradeShape).optional(),
   content: z.string().optional().describe("The text or URL the QR encodes, when the call set it."),
+};
+
+/** qr_generate_from_template: the image fields plus the template it came from. */
+export const qrTemplateOutputShape = {
+  format: z.string().describe("File format the engine rendered: png, svg, jpg, webp or pdf."),
+  mimeType: z.string().optional().describe("MIME type of the rendered file (the engine's contentType)."),
+  sizeBytes: z.number().int().min(0).optional().describe("Size of the rendered file in bytes, as reported by the engine."),
+  resourceUri: z
+    .string()
+    .optional()
+    .describe("PDF on the remote server only: URI of the embedded resource block that carries the file."),
+  filePath: z.string().optional().describe("PDF in the stdio package only: local temp file the PDF was written to."),
+  upgrade: z.object(upgradeShape).optional(),
+  content: z.string().optional().describe("The text or URL the QR encodes, when the call set it."),
+  templateId: z
+    .string()
+    .optional()
+    .describe("Template id this render came from, used to reopen the design in the builder."),
 };
 
 /** qr_generate_ai. */
@@ -32,6 +67,7 @@ export const qrAiOutputShape = {
     .optional()
     .describe("PDF on the remote server only: URI of the embedded resource block that carries the file."),
   filePath: z.string().optional().describe("PDF in the stdio package only: local temp file the PDF was written to."),
+  upgrade: z.object(upgradeShape).optional(),
   content: z.string().describe("The text or URL the QR encodes."),
   aiExplanation: z
     .string()
@@ -53,6 +89,7 @@ export const qrBuildOutputShape = {
     .optional()
     .describe("PDF on the remote server only: URI of the embedded resource block that carries the file."),
   filePath: z.string().optional().describe("PDF in the stdio package only: local temp file the PDF was written to."),
+  upgrade: z.object(upgradeShape).optional(),
   payload: z
     .string()
     .describe("The payload string the engine built and the QR encodes (WIFI:..., BEGIN:VCARD..., geo:...)."),

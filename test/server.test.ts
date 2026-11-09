@@ -140,7 +140,7 @@ describe("structuredContent", () => {
   it("qr_generate_from_template: content only when overridden", async () => {
     routes.set("POST /api/v1/qr/templates/neon", () => ({ json: { qrBase64: PNG_B64, format: "png" } }));
     const r = await call("qr_generate_from_template", { templateId: "neon" });
-    assert.deepEqual(r.structuredContent, { format: "png", mimeType: "image/png" });
+    assert.deepEqual(r.structuredContent, { format: "png", mimeType: "image/png", templateId: "neon" });
   });
 
   it("qr_build_*: the built payload", async () => {
