@@ -1,0 +1,53 @@
+name: probe
+
+# Free canary for issue #55 (Bunny edge drops ~0.2% of requests).
+# Runs on this public repo so the scheduled minutes cost nothing.
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe production endpoints
+        run: |
+          set -uo pipefail
+          urls=(
+            "https://qr-branding.com/"
+            "https://qr-branding.com/pricing"
+            "https://qr-branding.com/builder"
+            "https://qr-branding.com/docs/integrations/mcp"
+            "https://qr-branding.com/qr-code-generator"
+            "https://qr-branding.com/mcp?probe=1"
+            "https://api.qr-branding.com/healthz"
+          )
+          failures=0
+          {
+            echo "| endpoint | status | ms |"
+            echo "|---|---|---|"
+          } >> "$GITHUB_STEP_SUMMARY"
+          for url in "${urls[@]}"; do
+            body=$(mktemp)
+            read -r code ms <<<"$(curl -sS -o "$body" -w '%{http_code} %{time_total}' --max-time 15 "$url" 2>/dev/null || echo '000 0')"
+            ms_int=$(awk -v t="$ms" 'BEGIN { printf "%.0f", t * 1000 }')
+            echo "| $url | $code | $ms_int |" >> "$GITHUB_STEP_SUMMARY"
+            # 5xx (500-599) and transport failures (000) are the signals we hunt.
+            # 4xx are expected here: /mcp answers 405 to a GET on purpose.
+            if [ "$code" = "000" ] || { [ "$code" -ge 500 ] && [ "$code" -le 599 ]; }; then
+              echo "::error title=probe failed::$url returned $code after ${ms_int}ms"
+              failures=$((failures + 1))
+              head -c 400 "$body" | sed 's/^/  /' || true
+            fi
+            rm -f "$body"
+          done
+          if [ "$failures" -gt 0 ]; then
+            echo "failures=$failures" >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          echo "all endpoints answered without 5xx or transport errors" >> "$GITHUB_STEP_SUMMARY"
