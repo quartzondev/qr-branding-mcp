@@ -25,7 +25,17 @@ jobs:
             "https://qr-branding.com/docs/integrations/mcp"
             "https://qr-branding.com/qr-code-generator"
             "https://qr-branding.com/mcp?probe=1"
-            "https://api.qr-branding.com/healthz"
+            "https://api.qr-branding.com/api/ping"
+          )
+          # These must answer 2xx. The rest only need to avoid 5xx/transport:
+          # /mcp answers 405 to a GET on purpose.
+          #
+          # The engine row used to be https://api.qr-branding.com/healthz, which
+          # returns 404 — a 4xx, so the canary stayed green without ever checking
+          # the .NET engine. /api/ping is the public health route ({"status":
+          # "ok"}); /api/healthz exists but is behind the API key and answers 401.
+          must_be_2xx=(
+            "https://api.qr-branding.com/api/ping"
           )
           failures=0
           {
@@ -38,11 +48,16 @@ jobs:
             ms_int=$(awk -v t="$ms" 'BEGIN { printf "%.0f", t * 1000 }')
             echo "| $url | $code | $ms_int |" >> "$GITHUB_STEP_SUMMARY"
             # 5xx (500-599) and transport failures (000) are the signals we hunt.
-            # 4xx are expected here: /mcp answers 405 to a GET on purpose.
             if [ "$code" = "000" ] || { [ "$code" -ge 500 ] && [ "$code" -le 599 ]; }; then
               echo "::error title=probe failed::$url returned $code after ${ms_int}ms"
               failures=$((failures + 1))
               head -c 400 "$body" | sed 's/^/  /' || true
+            elif printf '%s\n' "${must_be_2xx[@]}" | grep -Fqx -- "$url"; then
+              if [ "$code" -lt 200 ] || [ "$code" -ge 300 ]; then
+                echo "::error title=probe failed::$url must answer 2xx, got $code"
+                failures=$((failures + 1))
+                head -c 400 "$body" | sed 's/^/  /' || true
+              fi
             fi
             rm -f "$body"
           done
