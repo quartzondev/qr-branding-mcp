@@ -9,6 +9,7 @@ import type { QrBrandingClient } from "./client.js";
 import {
   handleQrGenerate,
   handleQrGenerateAi,
+  handleQrScanCheck,
   qrGenerateAiInputShape,
   qrGenerateInputShape,
 } from "./tools/generate.js";
@@ -18,6 +19,19 @@ import {
   qrGenerateFromTemplateInputShape,
   qrListTemplatesInputShape,
 } from "./tools/templates.js";
+import {
+  handleQrGetTemplate,
+  handleQrPoster,
+  qrGetTemplateInputShape,
+  qrGetTemplateOutputShape,
+  qrPosterInputShape,
+  qrPosterOutputShape,
+} from "./tools/poster.js";
+import {
+  handleQrListAiProviders,
+  qrListAiProvidersInputShape,
+  qrListAiProvidersOutputShape,
+} from "./tools/providers.js";
 import {
   handleQrBuildGeo,
   handleQrBuildVcard,
@@ -30,6 +44,7 @@ import {
   qrAiOutputShape,
   qrBuildOutputShape,
   qrImageOutputShape,
+  qrScanCheckOutputShape,
   qrTemplateOutputShape,
   qrTemplatesOutputShape,
 } from "./tools/output.js";
@@ -89,6 +104,20 @@ export function createServer(client: QrBrandingClient, version: string): McpServ
   );
 
   server.registerTool(
+    "qr_scan_check",
+    {
+      title: "Check that a QR design will scan",
+      // Byte-identical to the remote server (the drift guard compares them).
+      description:
+        "Run the print check on a design before it goes to the printer: the engine renders it and decodes it under 13 simulated conditions (small print, distance, blur, dim light, low contrast, glare, noise, rotation) and returns the same report the builder's scan panel shows, plus the minimum print size at table, wall and street distance. Call it after qr_generate when the result is going to be printed. fileFormat/outputWidth/outputHeight are ignored: the check renders its own bitmap.",
+      inputSchema: qrGenerateInputShape,
+      outputSchema: qrScanCheckOutputShape,
+      annotations: annotations("Check that a QR design will scan"),
+    },
+    async (args) => handleQrScanCheck(client, args),
+  );
+
+  server.registerTool(
     "qr_generate_ai",
     {
       title: "Generate a QR code from a prompt (AI)",
@@ -103,6 +132,33 @@ export function createServer(client: QrBrandingClient, version: string): McpServ
       annotations: annotations("Generate a QR code from a prompt (AI)", true),
     },
     async (args) => handleQrGenerateAi(client, args),
+  );
+
+  server.registerTool(
+    "qr_get_template",
+    {
+      title: "Read a curated template's design",
+      // Byte-identical to the remote server (the drift guard compares them).
+      description:
+        "Fetch one of the 118 curated templates together with its full design config (module and finder shapes, colours, frame, caption). Use it when the user liked a template but wants changes: read the config here, then pass it to qr_generate with their tweaks. qr_generate_from_template renders the template as-is.",
+      inputSchema: qrGetTemplateInputShape,
+      outputSchema: qrGetTemplateOutputShape,
+      annotations: annotations("Read a curated template's design"),
+    },
+    async (args) => handleQrGetTemplate(client, args),
+  );
+
+  server.registerTool(
+    "qr_poster",
+    {
+      title: "Render a print-ready poster around one QR",
+      description:
+        "Wrap one QR design in a print-ready poster: a4/a5/a6/letter trim, four layouts (minimal, band, card, tent), headline, instruction line, footer, optional logo, 3 mm bleed and crop marks. Returns a vector PDF by default (ready for a print shop) or a png preview at 36-300 dpi. Useful for a table card, a shop window or a hotel desk. The design fields are the same qr_generate takes; fileFormat is the poster's own format, not the code's.",
+      inputSchema: qrPosterInputShape,
+      outputSchema: qrPosterOutputShape,
+      annotations: annotations("Render a print-ready poster around one QR"),
+    },
+    async (args) => handleQrPoster(client, args),
   );
 
   server.registerTool(
@@ -189,6 +245,20 @@ export function createServer(client: QrBrandingClient, version: string): McpServ
       annotations: annotations("Build a geo: URI QR"),
     },
     async (args) => handleQrBuildGeo(client, args),
+  );
+
+  server.registerTool(
+    "qr_list_ai_providers",
+    {
+      title: "List the LLM providers for bring-your-own-key AI",
+      // Byte-identical to the remote server (the drift guard compares them).
+      description:
+        "List the LLM providers the engine accepts for bring-your-own-key AI designs (POST /api/qr/ai/generate), with each provider id, its default model and the recommended model ids. Any model id your provider offers works; the list is a recommendation, not an allowlist. qr_generate_ai does not need this: it uses the managed path with our keys.",
+      inputSchema: qrListAiProvidersInputShape,
+      outputSchema: qrListAiProvidersOutputShape,
+      annotations: annotations("List the LLM providers for bring-your-own-key AI"),
+    },
+    async (args) => handleQrListAiProviders(client, args),
   );
 
   return server;

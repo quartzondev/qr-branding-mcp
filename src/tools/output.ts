@@ -57,6 +57,50 @@ export const qrTemplateOutputShape = {
     .describe("Template id this render came from, used to reopen the design in the builder."),
 };
 
+/** qr_scan_check: the report scanned back from the rendered design. */
+export const qrScanCheckOutputShape = {
+  grade: z.string().describe("Print-readiness grade: excellent, good, fair or poor."),
+  symbolModules: z.number().int().describe("Modules per side of the symbol."),
+  version: z.number().int().describe("QR version (symbol size)."),
+  smallestModulePx: z.number().nullable().optional().describe("Smallest module in the rendered bitmap, in pixels."),
+  designScore: z.number().int().optional().describe("Static design score (0-100)."),
+  designWarnings: z.array(z.string()).optional().describe("QrConfig fields the static rules flagged."),
+  elapsedMs: z.number().int().optional().describe("How long the simulated scan took."),
+  engineAdjusts: z
+    .boolean()
+    .optional()
+    .describe("True when the engine had to strengthen the design for it to read back (the file differs from the request)."),
+  conditions: z
+    .array(
+      z.object({
+        id: z.string(),
+        core: z.boolean(),
+        passed: z.boolean(),
+        readers: z.number().int().describe("How many of the engine's two readers decoded it (0-2)."),
+      }),
+    )
+    .describe("One entry per simulated condition (baseline, small-print, far-away, blur, dim light, glare, noise, rotated)."),
+  resolutions: z
+    .array(
+      z.object({
+        modulePx: z.number(),
+        passed: z.boolean(),
+        readers: z.number().int(),
+      }),
+    )
+    .optional()
+    .describe("How small the modules can get and still be read: one step per tested size, largest first."),
+  sizes: z
+    .array(
+      z.object({
+        id: z.string(),
+        distanceCm: z.number().int(),
+        minSideMm: z.number().nullable(),
+      }),
+    )
+    .describe("Minimum print size at table, wall and street distance."),
+};
+
 /** qr_generate_ai. */
 export const qrAiOutputShape = {
   format: z.string().describe("File format the engine rendered: png, svg, jpg, webp or pdf."),

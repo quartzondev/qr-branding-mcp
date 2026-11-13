@@ -18,13 +18,13 @@
       ]
     }
   ],
-  "version": "0.2.2",
+  "version": "0.2.7",
   "packages": [
     {
       "registryType": "npm",
       "registryBaseUrl": "https://registry.npmjs.org",
       "identifier": "@qr-branding/mcp-server",
-      "version": "0.2.2",
+      "version": "0.2.7",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"
@@ -32,7 +32,7 @@
       "environmentVariables": [
         {
           "name": "QR_BRANDING_API_KEY",
-          "description": "Your QR Branding API key (qrb_â€¦), from https://qr-branding.com/dashboard/keys. Requires a Studio pack.",
+          "description": "Your QR Branding API key (qrb_…), from https://qr-branding.com/dashboard/keys. Requires a Studio pack.",
           "isRequired": true,
           "isSecret": true
         },
@@ -52,7 +52,7 @@
       "headers": [
         {
           "name": "X-API-Key",
-          "description": "Your QR Branding API key (qrb_â€¦). `Authorization: Bearer qrb_â€¦` is accepted too. Optional: without a key the remote server runs a keyless trial (no AI, PNG up to 720 px, 20 tool calls per day per network).",
+          "description": "Your QR Branding API key (qrb_…). Authorization: Bearer qrb_… is accepted too. Optional: without a key the remote server runs a keyless trial (no AI, PNG up to 720 px, 20 tool calls per day per network).",
           "isRequired": false,
           "isSecret": true
         }

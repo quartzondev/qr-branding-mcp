@@ -65,7 +65,7 @@ const call = (name: string, args: Record<string, unknown>) =>
 describe("tools/list", () => {
   it("declares an object outputSchema and the annotations on every tool", async () => {
     const { tools } = await client.listTools();
-    assert.equal(tools.length, 7);
+    assert.equal(tools.length, 11);
     for (const t of tools) {
       assert.equal(t.outputSchema?.type, "object", t.name);
       const ai = t.name === "qr_generate_ai";

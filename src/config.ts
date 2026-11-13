@@ -14,7 +14,13 @@ export interface ServerConfig {
   version: string;
 }
 
-const PACKAGE_VERSION = "0.2.2";
+/**
+ * Version this server announces in `initialize` and in its User-Agent. It must
+ * equal package.json's: the published 0.2.7 was still announcing 0.2.3, so
+ * every directory and client showed a version three releases behind. The test
+ * in test/version.test.ts fails the build when the two drift.
+ */
+export const PACKAGE_VERSION = "0.2.7";
 
 const DEFAULT_BASE_URL = "https://qr-branding.com";
 

@@ -5,9 +5,9 @@
 import { z } from "zod/v3";
 
 import type { QrBrandingClient } from "../client.js";
-import { buildErrorResult, buildQrResult, type ToolResult, type QrResponse } from "../result.js";
+import { buildErrorResult, buildQrResult, buildTextResult, type ToolResult, type QrResponse } from "../result.js";
 
-const MODULE_SHAPES = [
+export const MODULE_SHAPES = [
   "square",
   "rounded",
   "circle",
@@ -19,11 +19,11 @@ const MODULE_SHAPES = [
   "horizontal-line",
 ] as const;
 
-const FINDER_OUTER_SHAPES = ["square", "rounded", "circle", "leaf", "diamond"] as const;
-const FINDER_INNER_SHAPES = ["square", "rounded", "circle", "dot", "diamond"] as const;
-const ECC_LEVELS = ["L", "M", "Q", "H"] as const;
+export const FINDER_OUTER_SHAPES = ["square", "rounded", "circle", "leaf", "diamond"] as const;
+export const FINDER_INNER_SHAPES = ["square", "rounded", "circle", "dot", "diamond"] as const;
+export const ECC_LEVELS = ["L", "M", "Q", "H"] as const;
 const FILE_FORMATS = ["png", "svg", "jpg", "webp", "pdf"] as const;
-const FRAME_STYLES = ["none", "banner-bottom", "banner-top", "rounded-box", "speech-bubble", "ticket"] as const;
+export const FRAME_STYLES = ["none", "banner-bottom", "banner-top", "rounded-box", "speech-bubble", "ticket"] as const;
 
 /** Shape exposed to the LLM — practical subset of QrConfig. */
 export const qrGenerateInputShape = {
@@ -194,6 +194,84 @@ export const qrGenerateAiInputShape = {
 
 const qrGenerateAiInputSchema = z.object(qrGenerateAiInputShape);
 export type QrGenerateAiInput = z.infer<typeof qrGenerateAiInputSchema>;
+
+export interface ScanCheckReport {
+  grade?: string;
+  symbolModules?: number;
+  version?: number;
+  smallestModulePx?: number | null;
+  designScore?: number;
+  designWarnings?: string[];
+  elapsedMs?: number;
+  engineAdjusts?: boolean;
+  conditions?: Array<{
+    id?: string;
+    core?: boolean;
+    passed?: boolean;
+    adaptiveReader?: boolean;
+    globalReader?: boolean;
+  }>;
+  resolutions?: Array<{ modulePx?: number; passed?: boolean; adaptiveReader?: boolean; globalReader?: boolean }>;
+  sizes?: Array<{ id?: string; distanceCm?: number; minSideMm?: number | null }>;
+}
+
+export async function handleQrScanCheck(
+  client: QrBrandingClient,
+  raw: unknown,
+): Promise<ToolResult> {
+  const input = qrGenerateInputSchema.parse(raw);
+  const payload = buildQrConfig(input);
+  const result = await client.post<ScanCheckReport>("/api/v1/qr/scan-check", payload);
+  if (!result.ok) return buildErrorResult(result, "qr_scan_check");
+  const report = (result.data ?? {}) as ScanCheckReport;
+  // The engine reports two decoders per condition; the tool exposes one 0-2 count.
+  const readersOf = (c: { adaptiveReader?: boolean; globalReader?: boolean }) =>
+    Number(Boolean(c.adaptiveReader)) + Number(Boolean(c.globalReader));
+  const conditions = (Array.isArray(report.conditions) ? report.conditions : []).map((c) => ({
+    id: c.id ?? "?",
+    core: Boolean(c.core),
+    passed: Boolean(c.passed),
+    readers: readersOf(c),
+  }));
+  const passed = conditions.filter((c) => c.passed).length;
+  const sizes = (Array.isArray(report.sizes) ? report.sizes : []).map((s) => ({
+    id: s.id ?? "?",
+    distanceCm: s.distanceCm ?? 0,
+    minSideMm: s.minSideMm ?? null,
+  }));
+  const resolutions = (Array.isArray(report.resolutions) ? report.resolutions : []).map((r) => ({
+    modulePx: r.modulePx ?? 0,
+    passed: Boolean(r.passed),
+    readers: readersOf(r),
+  }));
+  const sizeLine = sizes
+    .map((s) => `${s.id}: ${s.minSideMm === null ? "does not read" : `${Math.round(s.minSideMm)} mm`}`)
+    .join(" · ");
+  const summary = [
+    `Scan check: ${report.grade ?? "unknown"} — ${passed}/${conditions.length} conditions passed.`,
+    `Symbol: ${report.symbolModules ?? "?"} modules (version ${report.version ?? "?"}); design score ${report.designScore ?? "?"}/100.`,
+    resolutions.length
+      ? `Reads down to ${Math.min(...resolutions.filter((r) => r.passed).map((r) => r.modulePx)) || "?"} px modules.`
+      : "",
+    sizeLine ? `Minimum print size — ${sizeLine}.` : "",
+    report.engineAdjusts ? "The engine strengthened the design to make it read back." : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+  return buildTextResult(summary, {
+    grade: report.grade ?? "poor",
+    symbolModules: report.symbolModules ?? 0,
+    version: report.version ?? 0,
+    smallestModulePx: report.smallestModulePx ?? null,
+    designScore: report.designScore,
+    designWarnings: report.designWarnings,
+    elapsedMs: report.elapsedMs,
+    engineAdjusts: Boolean(report.engineAdjusts),
+    conditions,
+    resolutions,
+    sizes,
+  });
+}
 
 export async function handleQrGenerateAi(
   client: QrBrandingClient,

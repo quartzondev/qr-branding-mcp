@@ -1,7 +1,7 @@
 {
   "name": "@qr-branding/mcp-server",
-  "version": "0.2.2",
-  "description": "MCP server for the QR Branding API Ã¢â‚¬â€ generate QR codes from AI assistants.",
+  "version": "0.2.7",
+  "description": "MCP server for the QR Branding API — generate QR codes from AI assistants.",
   "mcpName": "io.github.quartzondev/qr-branding",
   "type": "module",
   "bin": {
@@ -10,7 +10,7 @@
   "scripts": {
     "build": "tsc",
     "smoke": "tsx tools/smoke.ts",
-    "test": "tsx --test test/server.test.ts",
+    "test": "tsx --test test/server.test.ts test/version.test.ts",
     "start": "node dist/index.js",
     "prepublishOnly": "npm run build"
   },
