@@ -20,7 +20,7 @@ export interface ServerConfig {
  * every directory and client showed a version three releases behind. The test
  * in test/version.test.ts fails the build when the two drift.
  */
-export const PACKAGE_VERSION = "0.2.7";
+export const PACKAGE_VERSION = "0.2.8";
 
 const DEFAULT_BASE_URL = "https://qr-branding.com";
 
